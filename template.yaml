@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  java-sam-api-example
+
+  Sample SAM Template for java-sam-api-example
+
+Globals:
+  Function:
+    Timeout: 20
+
+Resources:
+  SAMExampleApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS,PUT,PATCH,DELETE'"
+        AllowHeaders: "'content-type'"
+        AllowOrigin: "'*'"
+        AllowCredentials: "'*'"
+  SAMExampleFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: SAMExampleFunction
+      Handler: samexample.App::handleRequest
+      Runtime: java11
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Environment: 
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+      Events:
+        SAMExample:
+          Type: Api 
+          Properties:
+            Path: /hello
+            Method: get
+            RestApiId: !Ref SAMExampleApi
+
+Outputs:
+  SAMExampleApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${SAMExampleApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  SAMExampleFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt SAMExampleFunction.Arn
+  SAMExampleFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt SAMExampleFunctionRole.Arn
